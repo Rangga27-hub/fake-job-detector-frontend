@@ -1,7 +1,47 @@
 import React, { useState } from 'react';
-import { Shield, AlertTriangle, CheckCircle2, FileText, Loader2, Info, TrendingUp } from 'lucide-react';
+import { Shield, AlertTriangle, AlertCircle, CheckCircle2, FileText, Loader2, Info, TrendingUp } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+// Risk level styling configuration
+const RISK_STYLES = {
+  HIGH_RISK: {
+    bgColor:    '#FEF2F2',
+    borderColor:'#FECACA',
+    textColor:  '#991B1B',
+    accentColor:'#DC2626',
+    iconColor:  '#DC2626',
+    icon:       AlertTriangle,
+    barColor:   '#DC2626',
+  },
+  MEDIUM_RISK: {
+    bgColor:    '#FFF7ED',
+    borderColor:'#FED7AA',
+    textColor:  '#9A3412',
+    accentColor:'#EA580C',
+    iconColor:  '#EA580C',
+    icon:       AlertTriangle,
+    barColor:   '#EA580C',
+  },
+  LOW_RISK: {
+    bgColor:    '#FEFCE8',
+    borderColor:'#FDE68A',
+    textColor:  '#854D0E',
+    accentColor:'#CA8A04',
+    iconColor:  '#CA8A04',
+    icon:       AlertCircle,
+    barColor:   '#CA8A04',
+  },
+  LIKELY_LEGITIMATE: {
+    bgColor:    '#F0FDF4',
+    borderColor:'#BBF7D0',
+    textColor:  '#15803D',
+    accentColor:'#16A34A',
+    iconColor:  '#16A34A',
+    icon:       CheckCircle2,
+    barColor:   '#16A34A',
+  },
+};
 
 export default function App() {
   const [jobText, setJobText] = useState('');
@@ -30,7 +70,7 @@ export default function App() {
       const data = await response.json();
       setResult(data);
     } catch (err) {
-      setError(err.message || 'Failed to connect to API. Make sure backend is running on port 8000.');
+      setError(err.message || 'Failed to connect to API. Make sure backend is running.');
     } finally {
       setLoading(false);
     }
@@ -45,6 +85,10 @@ export default function App() {
     setResult(null);
     setError(null);
   };
+
+  // Get risk style based on result
+  const risk = result ? RISK_STYLES[result.risk_level] : null;
+  const RiskIcon = risk?.icon;
 
   return (
     <div style={{ minHeight: '100vh', background: '#F4F6F8', fontFamily: "'Source Serif Pro', Georgia, serif" }}>
@@ -69,7 +113,6 @@ export default function App() {
           .trust-item { border-right: none !important; padding: 12px 0 !important; border-bottom: 1px solid #F1F5F9; }
           .trust-item:last-child { border-bottom: none; }
           h1 { font-size: 32px !important; }
-          nav { display: none !important; }
         }
       `}</style>
 
@@ -135,27 +178,17 @@ export default function App() {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', flexWrap: 'wrap', gap: '12px' }}>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <button
-                  className="btn-example sans"
-                  onClick={() => handleLoadExample('real')}
-                  style={{ padding: '8px 14px', fontSize: '13px', color: '#1B3A57', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '5px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.15s' }}
-                >
+                <button className="btn-example sans" onClick={() => handleLoadExample('real')}
+                  style={{ padding: '8px 14px', fontSize: '13px', color: '#1B3A57', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '5px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.15s' }}>
                   Try Real Example
                 </button>
-                <button
-                  className="btn-example sans"
-                  onClick={() => handleLoadExample('fake')}
-                  style={{ padding: '8px 14px', fontSize: '13px', color: '#1B3A57', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '5px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.15s' }}
-                >
+                <button className="btn-example sans" onClick={() => handleLoadExample('fake')}
+                  style={{ padding: '8px 14px', fontSize: '13px', color: '#1B3A57', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '5px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.15s' }}>
                   Try Fake Example
                 </button>
               </div>
-              <button
-                className="btn-primary sans"
-                onClick={handleAnalyze}
-                disabled={loading || jobText.length < 50}
-                style={{ padding: '12px 28px', fontSize: '14px', fontWeight: 600, color: '#FFFFFF', background: '#1B3A57', border: 'none', borderRadius: '5px', cursor: 'pointer', transition: 'all 0.15s ease', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.01em' }}
-              >
+              <button className="btn-primary sans" onClick={handleAnalyze} disabled={loading || jobText.length < 50}
+                style={{ padding: '12px 28px', fontSize: '14px', fontWeight: 600, color: '#FFFFFF', background: '#1B3A57', border: 'none', borderRadius: '5px', cursor: 'pointer', transition: 'all 0.15s ease', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.01em' }}>
                 {loading ? (<><Loader2 size={16} className="spin" />Analyzing...</>) : 'Analyze Posting'}
               </button>
             </div>
@@ -180,7 +213,7 @@ export default function App() {
                   <Info size={24} color="#94A3B8" />
                 </div>
                 <h3 className="sans" style={{ fontSize: '15px', fontWeight: 600, color: '#475569', marginBottom: '6px' }}>Awaiting Analysis</h3>
-                <p className="sans" style={{ fontSize: '13px', color: '#94A3B8', lineHeight: 1.5 }}>Paste a job posting and click Analyze to receive a fraud probability assessment.</p>
+                <p className="sans" style={{ fontSize: '13px', color: '#94A3B8', lineHeight: 1.5 }}>Paste a job posting and click Analyze to receive a fraud risk assessment.</p>
               </div>
             )}
 
@@ -191,53 +224,56 @@ export default function App() {
               </div>
             )}
 
-            {result && !loading && (
+            {result && !loading && risk && (
               <div className="fade-in" style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden' }}>
-                <div style={{ padding: '24px', background: result.prediction === 'FAKE' ? '#FEF2F2' : '#F0FDF4', borderBottom: `1px solid ${result.prediction === 'FAKE' ? '#FECACA' : '#BBF7D0'}` }}>
+                {/* RISK HEADER */}
+                <div style={{ padding: '24px', background: risk.bgColor, borderBottom: `1px solid ${risk.borderColor}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                    {result.prediction === 'FAKE'
-                      ? <AlertTriangle size={22} color="#DC2626" strokeWidth={2.2} />
-                      : <CheckCircle2 size={22} color="#16A34A" strokeWidth={2.2} />}
-                    <span className="sans" style={{ fontSize: '11px', fontWeight: 600, color: result.prediction === 'FAKE' ? '#DC2626' : '#16A34A', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                      {result.prediction === 'FAKE' ? 'Likely Fraudulent' : 'Likely Legitimate'}
+                    <RiskIcon size={22} color={risk.iconColor} strokeWidth={2.2} />
+                    <span className="sans" style={{ fontSize: '11px', fontWeight: 600, color: risk.accentColor, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                      {result.risk_label}
                     </span>
                   </div>
-                  <div className="serif" style={{ fontSize: '32px', fontWeight: 700, color: result.prediction === 'FAKE' ? '#991B1B' : '#15803D', lineHeight: 1.1 }}>
-                    {(result.confidence * 100).toFixed(1)}%
+                  <div className="serif" style={{ fontSize: '28px', fontWeight: 700, color: risk.textColor, lineHeight: 1.2, marginBottom: '8px' }}>
+                    {(result.fake_probability * 100).toFixed(1)}% Fraud Probability
                   </div>
-                  <p className="sans" style={{ fontSize: '13px', color: '#64748B', marginTop: '4px' }}>Confidence score</p>
+                  <p className="sans" style={{ fontSize: '13px', color: risk.textColor, lineHeight: 1.5, opacity: 0.85 }}>
+                    {result.risk_message}
+                  </p>
                 </div>
 
+                {/* PROBABILITY BARS */}
                 <div style={{ padding: '24px', borderBottom: '1px solid #F1F5F9' }}>
                   <h4 className="sans" style={{ fontSize: '12px', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '16px' }}>Probability Distribution</h4>
 
                   <div style={{ marginBottom: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span className="sans" style={{ fontSize: '13px', color: '#1E293B', fontWeight: 500 }}>Real</span>
-                      <span className="mono" style={{ fontSize: '13px', color: '#1E293B' }}>{(result.probabilities.real * 100).toFixed(1)}%</span>
+                      <span className="mono" style={{ fontSize: '13px', color: '#1E293B' }}>{(result.real_probability * 100).toFixed(1)}%</span>
                     </div>
                     <div style={{ height: '6px', background: '#F1F5F9', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${result.probabilities.real * 100}%`, background: '#16A34A', borderRadius: '3px', transition: 'width 0.6s ease-out' }} />
+                      <div style={{ height: '100%', width: `${result.real_probability * 100}%`, background: '#16A34A', borderRadius: '3px', transition: 'width 0.6s ease-out' }} />
                     </div>
                   </div>
 
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span className="sans" style={{ fontSize: '13px', color: '#1E293B', fontWeight: 500 }}>Fake</span>
-                      <span className="mono" style={{ fontSize: '13px', color: '#1E293B' }}>{(result.probabilities.fake * 100).toFixed(1)}%</span>
+                      <span className="mono" style={{ fontSize: '13px', color: '#1E293B' }}>{(result.fake_probability * 100).toFixed(1)}%</span>
                     </div>
                     <div style={{ height: '6px', background: '#F1F5F9', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${result.probabilities.fake * 100}%`, background: '#DC2626', borderRadius: '3px', transition: 'width 0.6s ease-out' }} />
+                      <div style={{ height: '100%', width: `${result.fake_probability * 100}%`, background: risk.barColor, borderRadius: '3px', transition: 'width 0.6s ease-out' }} />
                     </div>
                   </div>
                 </div>
 
+                {/* FLAGS */}
                 <div style={{ padding: '24px' }}>
                   <h4 className="sans" style={{ fontSize: '12px', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '14px' }}>Key Signals Detected</h4>
                   <ul style={{ listStyle: 'none' }}>
                     {result.flags.map((flag, i) => (
                       <li key={i} className="sans" style={{ fontSize: '13px', color: '#334155', padding: '8px 0', borderBottom: i < result.flags.length - 1 ? '1px solid #F1F5F9' : 'none', display: 'flex', alignItems: 'flex-start', gap: '10px', lineHeight: 1.5 }}>
-                        <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: result.prediction === 'FAKE' ? '#DC2626' : '#16A34A', marginTop: '8px', flexShrink: 0 }} />
+                        <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: risk.accentColor, marginTop: '8px', flexShrink: 0 }} />
                         {flag}
                       </li>
                     ))}
@@ -272,7 +308,7 @@ export default function App() {
           <p className="sans" style={{ fontSize: '13px', color: '#64748B' }}>
             JobGuard is a screening aid, not a final verdict. Always verify postings through additional channels.
           </p>
-          <p className="mono" style={{ fontSize: '12px', color: '#94A3B8' }}>v1.0 · Machine Learning Project 2026</p>
+          <p className="mono" style={{ fontSize: '12px', color: '#94A3B8' }}>v2.0 · Machine Learning Project 2026</p>
         </div>
       </footer>
     </div>
